@@ -50,9 +50,39 @@ from .exceptions import SKBuildError, SKBuildGeneratorNotFoundError
 from .utils import (mkdir_p, parse_manifestin, PythonModuleFinder, to_platform_path, to_unix_path)
 
 import logging
-logging.basicConfig(format='[SKBUILD] %(message)s')
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+
+# Option 1
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+
+
+# Option 2
+def _create_local_logger():
+    """
+    Having the logger declared globally means that logging needs to be
+    configured before this module is imported. That seems undesirable, but I'm
+    not sure how to best handle it.
+
+    Logging References:
+        https://stackoverflow.com/questions/15727420/using-python-logging-in-multiple-modules
+        https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
+    """
+    logger = logging.getLogger(__name__)
+    # Set propogate to False, because we are rolling our own our own Handler
+    # This means messages are not passed to and handled by the root handler.
+    logger.propagate = False
+    logger.setLevel(logging.DEBUG)
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
+    stdout_handler.setFormatter(
+        logging.Formatter('[skbuild] %(levelname)s: %(message)s')
+    )
+    # level = logging.DEBUG
+    level = logging.INFO
+    stdout_handler.setLevel(level)
+    logger.addHandler(stdout_handler)
+    return logger
+
+logger = _create_local_logger()
 
 
 
@@ -415,7 +445,7 @@ def setup(*args, **kw):  # noqa: C901
         _check_skbuild_parameters(skbuild_kw)
     except SKBuildError as ex:
         import traceback
-        print("Traceback (most recent call last):")
+        logging.error("Traceback (most recent call last):")
         traceback.print_tb(sys.exc_info()[2])
         print('')
         sys.exit(ex)
@@ -578,9 +608,9 @@ def setup(*args, **kw):  # noqa: C901
             # ])
             # print('CMAKE_PREFIX_PATH = {}'.format(env['CMAKE_PREFIX_PATH']))
 
-    import ubelt as ub
     logger.info('CREATE CMAKER')
-    logger.info(' * cmake_args = {}'.format(ub.repr2(cmake_args)))
+    import pprint
+    logger.info(' * cmake_args = {}'.format(pprint.pformat(cmake_args)))
 
     try:
         if cmake_executable is None:
@@ -675,7 +705,7 @@ def setup(*args, **kw):  # noqa: C901
         # Copy packages
         logger.info('IN DEVELOPER MODE')
         logger.info('DEVELOP COPY PACKAGE DATA')
-        print('package_data = {!r}'.format(package_data))
+        logger.info('package_data = {!r}'.format(package_data))
         for package, package_file_list in package_data.items():
             for package_file in package_file_list:
                 package_file = os.path.join(package_dir[package], package_file)
@@ -892,12 +922,12 @@ def _copy_file(src_file, dest_file, hide_listing=True):
     dest_dir = os.path.dirname(dest_file)
     if dest_dir != "" and not os.path.exists(dest_dir):
         if not hide_listing:
-            print("creating directory {}".format(dest_dir))
+            logging.info("creating directory {}".format(dest_dir))
         mkdir_p(dest_dir)
 
     # Copy file
     if not hide_listing:
-        print("copying {} -> {}".format(src_file, dest_file))
+        logging.info("copying {} -> {}".format(src_file, dest_file))
     copyfile(src_file, dest_file)
     copymode(src_file, dest_file)
 
