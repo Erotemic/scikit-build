@@ -50,6 +50,7 @@ from .exceptions import SKBuildError, SKBuildGeneratorNotFoundError
 from .utils import (mkdir_p, parse_manifestin, PythonModuleFinder, to_platform_path, to_unix_path)
 
 import logging
+from pprint import pformat
 
 # Option 1
 # logger = logging.getLogger(__name__)
@@ -74,7 +75,7 @@ def _create_local_logger():
     logger.setLevel(logging.DEBUG)
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(
-        logging.Formatter('[skbuild] %(levelname)s: %(message)s')
+        logging.Formatter('%(levelname)s : %(message)s')
     )
     # level = logging.DEBUG
     level = logging.INFO
@@ -609,8 +610,7 @@ def setup(*args, **kw):  # noqa: C901
             # print('CMAKE_PREFIX_PATH = {}'.format(env['CMAKE_PREFIX_PATH']))
 
     logger.info('CREATE CMAKER')
-    import pprint
-    logger.info(' * cmake_args = {}'.format(pprint.pformat(cmake_args)))
+    logger.info(' * cmake_args = {}'.format(pformat(cmake_args)))
 
     try:
         if cmake_executable is None:
@@ -667,20 +667,20 @@ def setup(*args, **kw):  # noqa: C901
             if '' in package_dir:
                 package_dir[package] = to_unix_path(os.path.join(package_dir[''], package_dir[package]))
 
-    logger.info(' * package_dir = {}'.format(ub.repr2(package_dir)))
-    logger.info(' * packages = {}'.format(ub.repr2(packages)))
-    logger.info(' * package_data = {}'.format(ub.repr2(package_data)))
-    logger.info(' * py_modules = {}'.format(ub.repr2(py_modules)))
-    logger.info(' * scripts = {}'.format(ub.repr2(scripts)))
-    logger.info(' * data_files = {}'.format(ub.repr2(data_files)))
-    logger.info(' * cmake_source_dir = {}'.format(ub.repr2(cmake_source_dir)))
+    logger.info(' * package_dir = {}'.format(pformat(package_dir)))
+    logger.info(' * packages = {}'.format(pformat(packages)))
+    logger.info(' * package_data = {}'.format(pformat(package_data)))
+    logger.info(' * py_modules = {}'.format(pformat(py_modules)))
+    logger.info(' * scripts = {}'.format(pformat(scripts)))
+    logger.info(' * data_files = {}'.format(pformat(data_files)))
+    logger.info(' * cmake_source_dir = {}'.format(pformat(cmake_source_dir)))
 
-    logger.info(' * new_py_modules = {}'.format(ub.repr2(new_py_modules)))
-    logger.info(' * new_scripts = {}'.format(ub.repr2(new_scripts)))
+    logger.info(' * new_py_modules = {}'.format(pformat(new_py_modules)))
+    logger.info(' * new_scripts = {}'.format(pformat(new_scripts)))
 
     logger.info('COLLECT PACKAGE PREFIXES')
     package_prefixes = _collect_package_prefixes(package_dir, packages)
-    logger.info(' * package_prefixes = {}'.format(ub.repr2(package_prefixes)))
+    logger.info(' * package_prefixes = {}'.format(pformat(package_prefixes)))
 
     logger.info('CLASSIFY INSTALLED FILES')
     _classify_installed_files(cmkr.install(), package_data, package_prefixes,
@@ -766,7 +766,7 @@ def setup(*args, **kw):  # noqa: C901
 
     print("")
 
-    logger.info(' * FINAL SETUP KW = {}'.format(ub.repr2(kw, nl=3)))
+    logger.info(' * FINAL SETUP KW = {}'.format(pformat(kw)))
 
     return upstream_setup(*args, **kw)
 
