@@ -56,8 +56,9 @@ from pprint import pformat
 # logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
 
-
 # Option 2
+
+
 def _create_local_logger():
     """
     Having the logger declared globally means that logging needs to be
@@ -83,8 +84,8 @@ def _create_local_logger():
     logger.addHandler(stdout_handler)
     return logger
 
-logger = _create_local_logger()
 
+logger = _create_local_logger()
 
 
 def create_skbuild_argparser():
@@ -907,7 +908,6 @@ def _classify_file(path, package_data, package_prefixes,
         file_set.add(os.path.join(CMAKE_INSTALL_DIR(), path))
 
     logger.info('CLASSIFY {!r} as {!r}'.format(path, found_type))
-
 
 
 def _copy_file(src_file, dest_file, hide_listing=True):
